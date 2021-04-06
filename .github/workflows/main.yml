@@ -35,4 +35,4 @@ jobs:
           ls -ahl /home/ubuntu/prostavushka_bot_dev/
           pkill -f main.py
           cd /home/ubuntu/prostavushka_bot 
-          setsid python3 /home/ubuntu/prostavushka_bot/main.py
+          setsid python3 /home/ubuntu/prostavushka_bot/main.py &
