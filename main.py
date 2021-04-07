@@ -12,6 +12,7 @@ config = dotenv_values("conf.env")
 bot_token = config['bot_token']  #prostavushka_bot
 chat_id = config['bot_token']  #chat_id Amsterdam
 db_conf = config['db']
+db_login_password = config['db_login_password']
 
 updater = Updater(token=bot_token, use_context=True)  #запуск экземпляра бота
 
@@ -89,7 +90,7 @@ path = '/home/ubuntu/prostavushka_bot/kolya.png'
 path_tmp = '/home/ubuntu/prostavushka_bot/kolya_tmp.png'
 wrapper = textwrap.TextWrapper(width=35)
 
-client = MongoClient("mongodb+srv://admin:admin1@realmcluster.yzc9u.mongodb.net/" + db_conf)
+client = MongoClient("mongodb+srv://" + db_login_password + "@realmcluster.yzc9u.mongodb.net/" + db_conf)
 db = client['db']
 collection = db[db_conf]
 
