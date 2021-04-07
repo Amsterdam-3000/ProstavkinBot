@@ -104,7 +104,7 @@ def kolya_wisdom (update, context):
         fill=('#1C0606')
         )
     im.save(path_tmp)
-    context.bot.send_photo(chat_id, photo=open(path_tmp, 'rb'))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(path_tmp, 'rb'))
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
