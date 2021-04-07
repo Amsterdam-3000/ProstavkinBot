@@ -5,11 +5,13 @@ from forismatic import *
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 from dotenv import dotenv_values
-
+from pymongo import MongoClient
+from random import choice, randint
 
 config = dotenv_values("conf.env")
 bot_token = config['bot_token']  #prostavushka_bot
 chat_id = config['bot_token']  #chat_id Amsterdam
+db_conf = config['db']
 
 updater = Updater(token=bot_token, use_context=True)  #запуск экземпляра бота
 
@@ -87,12 +89,21 @@ path = '/home/ubuntu/prostavushka_bot/kolya.png'
 path_tmp = '/home/ubuntu/prostavushka_bot/kolya_tmp.png'
 wrapper = textwrap.TextWrapper(width=35)
 
+client = MongoClient("mongodb+srv://admin:admin1@realmcluster.yzc9u.mongodb.net/" + db_conf)
+db = client['db']
+collection = db[db_conf]
+
 def kolya_wisdom (update, context):
-    f = forismatic.ForismaticPy()
-    author = ''
-    if f.get_Quote('ru')[1]:
-        author = '\n\n                       - ' + f.get_Quote('ru')[1]
-    message = wrapper.fill(text=f.get_Quote('ru')[0]) + author
+    rnd = randint(0,100)
+    if rnd > 75:
+        for item in collection.find({"kolya_wisdom": 1}):
+            message = wrapper.fill(text=choice(item["quotes"])) + "\n\n                       - Николай Бутенко"
+    else:
+        f = forismatic.ForismaticPy()
+        author = ''
+        if f.get_Quote('ru')[1]:
+            author = '\n\n                       - ' + f.get_Quote('ru')[1]
+        message = wrapper.fill(text=f.get_Quote('ru')[0]) + author
     font_size = 14 - int(len(message)/50);
     unicode_font = ImageFont.truetype("/home/ubuntu/prostavushka_bot/DejaVuSans.ttf", font_size)
     im = Image.open(path)
