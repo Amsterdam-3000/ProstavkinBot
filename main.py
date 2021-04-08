@@ -125,7 +125,7 @@ def kolya_superdry (update, context):
         if int(update.message.from_user['id']) == int(kolya_superdry_allowed_user_id):
             if context.args:
                 try:
-                    weight = int(context.args[0])
+                    weight = round(float(context.args[0].replace(",",".")),2)
                     message = "⚖️ Сегодняшний вес - " + str(weight) + " кг"
                     today = date.today()
                     d1 = today.strftime("%d.%m.%Y")
