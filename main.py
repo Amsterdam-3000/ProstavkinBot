@@ -7,12 +7,14 @@ import textwrap
 from dotenv import dotenv_values
 from pymongo import MongoClient
 from random import choice, randint
+from datetime import date
 
 config = dotenv_values("conf.env")
 bot_token = config['bot_token']  #prostavushka_bot
 chat_id = config['bot_token']  #chat_id Amsterdam
 db_conf = config['db']
 db_login_password = config['db_login_password']
+kolya_superdry_allowed_user_id = config['kolya_superdry_allowed_user_id']
 
 updater = Updater(token=bot_token, use_context=True)  #запуск экземпляра бота
 
@@ -118,6 +120,33 @@ def kolya_wisdom (update, context):
     im.save(path_tmp)
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(path_tmp, 'rb'))
 
+def kolya_superdry (update, context):
+    if update.message.from_user['id']: 
+        if int(update.message.from_user['id']) == int(kolya_superdry_allowed_user_id):
+            if context.args:
+                try:
+                    weight = int(context.args[0])
+                    message = "⚖️ Сегодняшний вес - " + str(weight) + " кг"
+                    today = date.today()
+                    d1 = today.strftime("%d.%m.%Y")
+                    query = {"date": d1}
+                    values = {"kolya_superdry": 1,"date": d1,"weight": weight}
+
+                    find_result = collection.find(query)
+                    if find_result.count() == 0:
+                        if collection.save(values):
+                            message += "\n☁️ Успешно добавлен в ОБЛАЧНУЮ БД"
+                    else:
+                        if collection.update_one(query, { "$set": values}):
+                            message += "\n☁️ Успешно обновлен в ОБЛАЧНОЙ БД"
+                except:
+                    message = "Что-то пошло не так"
+            else:
+                message = "⚖️ Нужно указать вес"
+        else:
+            message = "🧔🏻 Нужно быть Колей, чтобы редактировать вес"
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 dima_handler = CommandHandler('dima', dima)
@@ -128,5 +157,7 @@ quote_handler = CommandHandler('quote', quote)
 dispatcher.add_handler(quote_handler)
 kolya_wisdom_handler = CommandHandler('kolya_wisdom', kolya_wisdom)
 dispatcher.add_handler(kolya_wisdom_handler)
+kolya_superdry_handler = CommandHandler('kolya_superdry', kolya_superdry)
+dispatcher.add_handler(kolya_superdry_handler)
 
 updater.start_polling()
