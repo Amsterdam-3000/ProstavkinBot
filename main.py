@@ -96,7 +96,7 @@ collection = db[db_conf]
 
 def kolya_wisdom (update, context):
     rnd = randint(0,100)
-    if rnd > 75:
+    if rnd >= 0:
         for item in collection.find({"kolya_wisdom": 1}):
             message = wrapper.fill(text=choice(item["quotes"])) + "\n\n                       - Николай Бутенко"
     else:
