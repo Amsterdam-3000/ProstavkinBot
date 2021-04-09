@@ -121,9 +121,9 @@ def kolya_wisdom (update, context):
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(path_tmp, 'rb'))
 
 def kolya_superdry (update, context):
-    if update.message.from_user['id']: 
-        if int(update.message.from_user['id']) == int(kolya_superdry_allowed_user_id):
-            if context.args:
+    if context.args:
+        if update.message.from_user['id']: 
+            if int(update.message.from_user['id']) == int(kolya_superdry_allowed_user_id):
                 try:
                     weight = round(float(context.args[0].replace(",",".")),2)
                     message = "⚖️ Сегодняшний вес - " + str(weight) + " кг"
@@ -142,9 +142,11 @@ def kolya_superdry (update, context):
                 except:
                     message = "Что-то пошло не так"
             else:
-                message = "⚖️ Нужно указать вес"
-        else:
-            message = "🧔🏻 Нужно быть Колей, чтобы редактировать вес"
+                message = "🧔🏻 Нужно быть Колей, чтобы редактировать вес"
+    else:
+        message = "🏃‍♂️ Статистика марафона:\n"
+        for item in collection.find({"kolya_superdry": 1}):
+            message += item['date'] + ' - ' + str(item['weight']) + ' кг\n'
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 start_handler = CommandHandler('start', start)
