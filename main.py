@@ -160,8 +160,7 @@ def kolya_superdry (update, context):
         plt.cla()
         plt.plot(x_np_array,y_np_array)
         plt.savefig(home_dir + 'kolya_superdry.png')
-        context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-        context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'))
+        context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'), caption=message)
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
