@@ -8,6 +8,8 @@ from dotenv import dotenv_values
 from pymongo import MongoClient
 from random import choice, randint
 from datetime import date
+import matplotlib.pyplot as plt
+import numpy as np
 
 config = dotenv_values("conf.env")
 bot_token = config['bot_token']  #prostavushka_bot
@@ -15,6 +17,7 @@ chat_id = config['bot_token']  #chat_id Amsterdam
 db_conf = config['db']
 db_login_password = config['db_login_password']
 kolya_superdry_allowed_user_id = config['kolya_superdry_allowed_user_id']
+home_dir = config['home_dir']
 
 updater = Updater(token=bot_token, use_context=True)  #запуск экземпляра бота
 
@@ -143,11 +146,22 @@ def kolya_superdry (update, context):
                     message = "Что-то пошло не так"
             else:
                 message = "🧔🏻 Нужно быть Колей, чтобы редактировать вес"
+        context.bot.send_message(chat_id=update.effective_chat.id, text=message)
     else:
         message = "🏃‍♂️ Статистика марафона:\n"
+        x_array = []
+        y_array = []
         for item in collection.find({"kolya_superdry": 1}):
             message += item['date'] + ' - ' + str(item['weight']) + ' кг\n'
-    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+            x_array.append(item['date'])
+            y_array.append(item['weight'])
+        x_np_array = np.array(x_array)
+        y_np_array = np.array(y_array)
+        plt.cla()
+        plt.plot(x_np_array,y_np_array)
+        plt.savefig(home_dir + 'kolya_superdry.png')
+        context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+        context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'))
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
