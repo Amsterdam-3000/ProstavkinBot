@@ -171,11 +171,17 @@ def kolya_superdry (update, context):
         plt.savefig(home_dir + 'kolya_superdry.png')
         context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'), caption=message)
 
+def kolya_history(update, context):
+    quotes = list(db.kolya_quotes_history.find({'msg': re.compile("^(ебать|бля|пиздец).{7,}", re.IGNORECASE)}))
+    quote = choice(quotes)
+    context.bot.forward_message(chat_id=update.effective_chat.id, from_chat_id=update.effective_chat.id, message_id=quote['_id'])
+
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('dima', dima))
 dispatcher.add_handler(CommandHandler('mail', mail))
 dispatcher.add_handler(CommandHandler('quote', quote))
 dispatcher.add_handler(CommandHandler('kolya_wisdom', kolya_wisdom))
 dispatcher.add_handler(CommandHandler('kolya_superdry', kolya_superdry))
+dispatcher.add_handler(CommandHandler('kolya_history', kolya_history))
 
 updater.start_polling()
