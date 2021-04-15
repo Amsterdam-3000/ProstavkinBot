@@ -11,6 +11,7 @@ from datetime import date, datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
+import re
 from scipy.interpolate import make_interp_spline
 
 config = dotenv_values("conf.env")
