@@ -94,13 +94,27 @@ def quote(update, context):
     message = '🔮 ' + f.get_Quote('ru')[0] + author
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
-path = '/home/ubuntu/prostavushka_bot/kolya.png'
-path_tmp = '/home/ubuntu/prostavushka_bot/kolya_tmp.png'
+path = home_dir+'kolya.png'
+path_tmp = home_dir+'kolya_tmp.png'
 wrapper = textwrap.TextWrapper(width=35)
 
 client = MongoClient("mongodb+srv://" + db_login_password + "@realmcluster.yzc9u.mongodb.net/" + db_conf)
 db = client['db']
 collection = db[db_conf]
+
+def send_quote(chat_id, message):
+    font_size = 14 - int(len(message)/50)
+    unicode_font = ImageFont.truetype(home_dir+"DejaVuSans.ttf", font_size)
+    im = Image.open(path)
+    draw_text = ImageDraw.Draw(im)
+    draw_text.text(
+        (60,45),
+        message,
+        font=unicode_font,
+        fill=('#1C0606')
+        )
+    im.save(path_tmp)
+    updater.bot.send_photo(chat_id=chat_id, photo=open(path_tmp, 'rb'))
 
 def kolya_wisdom (update, context):
     rnd = randint(0,100)
@@ -113,18 +127,7 @@ def kolya_wisdom (update, context):
         if f.get_Quote('ru')[1]:
             author = '\n\n                       - ' + f.get_Quote('ru')[1]
         message = wrapper.fill(text=f.get_Quote('ru')[0]) + author
-    font_size = 14 - int(len(message)/50);
-    unicode_font = ImageFont.truetype("/home/ubuntu/prostavushka_bot/DejaVuSans.ttf", font_size)
-    im = Image.open(path)
-    draw_text = ImageDraw.Draw(im)
-    draw_text.text(
-        (60,45),
-        message,
-        font=unicode_font,
-        fill=('#1C0606')
-        )
-    im.save(path_tmp)
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(path_tmp, 'rb'))
+    send_quote(update.effective_chat.id, message)
 
 def kolya_superdry (update, context):
     if context.args:
@@ -175,7 +178,8 @@ def kolya_superdry (update, context):
 def kolya_history(update, context):
     quotes = list(db.kolya_quotes_history.find({'msg': re.compile("^(ебать|бля|пиздец).{7,}", re.IGNORECASE)}))
     quote = choice(quotes)
-    context.bot.forward_message(chat_id=update.effective_chat.id, from_chat_id=update.effective_chat.id, message_id=quote['_id'])
+    message = wrapper.fill(text=quote['msg']) + "\n\n                - Николай Бутенко, {}".format(quote['date'].strftime('%d.%m.%Y'))
+    send_quote(update.effective_chat.id, message)
 
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('dima', dima))
