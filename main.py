@@ -178,7 +178,7 @@ def kolya_superdry (update, context):
 def kolya_history(update, context):
     quotes = list(db.kolya_quotes_history.find({'msg': re.compile("^(ебать|бля|пиздец).{7,}", re.IGNORECASE)}))
     quote = choice(quotes)
-    message = wrapper.fill(text=quote['msg']) + "\n\n                - Николай Бутенко, {}".format(quote['date'].strftime('%d.%m.%Y'))
+    message = wrapper.fill(text=quote['msg']) + "\n\n           - Николай Бутенко, {}".format(quote['date'].strftime('%d.%m.%Y'))
     send_quote(update.effective_chat.id, message)
 
 dispatcher.add_handler(CommandHandler('start', start))
