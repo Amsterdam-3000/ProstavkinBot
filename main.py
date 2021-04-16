@@ -175,8 +175,13 @@ def kolya_superdry (update, context):
         plt.savefig(home_dir + 'kolya_superdry.png')
         context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'), caption=message)
 
-def kolya_history(update, context):
-    quotes = list(db.kolya_quotes_history.find({'msg': re.compile("^(ебать|бля|пиздец).{7,}", re.IGNORECASE)}))
+def kolya_history(update, context): 
+    if context.args:
+        quotes = list(db.kolya_quotes_history.find({'msg': re.compile(context.args[0], re.IGNORECASE)}))
+        if len(quotes) == 0:
+            quotes = list([{'msg': 'Ничего не найдено по запросу', 'date': date.today()}])
+    else:
+        quotes = list(db.kolya_quotes_history.find({'msg': re.compile("^(ебать|бля|пиздец).{7,}", re.IGNORECASE)}))
     quote = choice(quotes)
     message = wrapper.fill(text=quote['msg']) + "\n\n           - Николай Бутенко, {}".format(quote['date'].strftime('%d.%m.%Y'))
     send_quote(update.effective_chat.id, message)
