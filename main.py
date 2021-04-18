@@ -157,10 +157,20 @@ def kolya_superdry (update, context):
         message = "🏃‍♂️ Статистика марафона:\n"
         x_array = []
         y_array = []
-        for item in collection.find({"kolya_superdry": 1}):
-            message += item['date'] + ' - ' + str(item['weight']) + ' кг\n'
+        weight_list = list(collection.find({"kolya_superdry": 1}))
+        for item in weight_list:
+            # message += item['date'] + ' - ' + str(item['weight']) + ' кг\n'
             x_array.append(datetime(int(item['date'][6:10]), int(item['date'][3:5]), int(item['date'][:2])))
             y_array.append(item['weight'])
+        message += '⚖️ Начальный вес (' + str(weight_list[0]['date']) + ') - ' + str(weight_list[0]['weight']) + ' кг\n'
+        message += '⚖️ Текущий вес (' + str(weight_list[-1]['date']) + ') - ' + str(weight_list[-1]['weight']) + ' кг\n'
+        weight_diff = weight_list[-1]['weight'] - weight_list[0]['weight']
+        if weight_diff > 0:
+        	weight_diff_dir = '👎 Набрал '
+        else:
+        	weight_diff_dir = '👍 Сбросил '
+        message += weight_diff_dir + str(abs(round(weight_diff,2))) + ' кг за ' + str(len(weight_list)) + ' дн. марафона\n'
+        message += '📋 В среднем по ' + str(abs(round((weight_diff/len(weight_list)),2))) + ' кг в день'
         x_np_array = np.array(x_array)
         y_np_array = np.array(y_array)
         date_num = dates.date2num(x_np_array)
