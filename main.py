@@ -130,6 +130,7 @@ def kolya_wisdom (update, context):
     send_quote(update.effective_chat.id, message)
 
 def kolya_superdry (update, context):
+    date_format = "%d.%m.%Y"
     if context.args:
         if update.message.from_user['id']: 
             if int(update.message.from_user['id']) == int(kolya_superdry_allowed_user_id):
@@ -137,7 +138,7 @@ def kolya_superdry (update, context):
                     weight = round(float(context.args[0].replace(",",".")),2)
                     message = "⚖️ Сегодняшний вес - " + str(weight) + " кг"
                     today = date.today()
-                    d1 = today.strftime("%d.%m.%Y")
+                    d1 = today.strftime(date_format)
                     query = {"date": d1}
                     values = {"kolya_superdry": 1,"date": d1,"weight": weight}
 
@@ -162,6 +163,8 @@ def kolya_superdry (update, context):
             # message += item['date'] + ' - ' + str(item['weight']) + ' кг\n'
             x_array.append(datetime(int(item['date'][6:10]), int(item['date'][3:5]), int(item['date'][:2])))
             y_array.append(item['weight'])
+        number_of_days = datetime.strptime(weight_list[-1]['date'], date_format) - datetime.strptime(weight_list[0]['date'], date_format)
+        number_of_days_including_current = number_of_days.days + 1
         message += '⚖️ Начало (' + str(weight_list[0]['date']) + ') - ' + str(weight_list[0]['weight']) + ' кг\n'
         message += '⚖️ Сейчас (' + str(weight_list[-1]['date']) + ') - ' + str(weight_list[-1]['weight']) + ' кг\n'
         weight_diff = weight_list[-1]['weight'] - weight_list[0]['weight']
@@ -169,8 +172,8 @@ def kolya_superdry (update, context):
         	weight_diff_dir = '👎 Набрал '
         else:
         	weight_diff_dir = '👍 Сбросил '
-        message += weight_diff_dir + str(abs(round(weight_diff,2))) + ' кг за ' + str(len(weight_list)) + ' дн.\n'
-        message += '📋 В среднем по ' + str(abs(round((weight_diff/len(weight_list)),2))) + ' кг в день'
+        message += weight_diff_dir + str(abs(round(weight_diff,2))) + ' кг за ' + str(number_of_days_including_current) + ' дн.\n'
+        message += '📋 В среднем по ' + str(abs(round((weight_diff/number_of_days_including_current),2))) + ' кг в день'
         x_np_array = np.array(x_array)
         y_np_array = np.array(y_array)
         date_num = dates.date2num(x_np_array)
