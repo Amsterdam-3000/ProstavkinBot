@@ -57,7 +57,8 @@ def mail(update, context):
         'ivan': {'name': 'Вано', 'stock_num': 95, 'avg_price': 1996},
         'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
         'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
-        'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944}
+        'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
+        'dima': {'name': 'Dimasique', 'stock_num': 2, 'avg_price': 1707}
         }
 
         balance = 0
