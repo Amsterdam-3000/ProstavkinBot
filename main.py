@@ -180,7 +180,7 @@ def kolya_superdry (update, context):
         date_num = dates.date2num(x_np_array)
         # smooth
         date_num_smooth = np.linspace(date_num.min(), date_num.max()) 
-        spl = make_interp_spline(date_num, y_np_array, k=2)
+        spl = make_interp_spline(date_num, y_np_array, k=1)
         y_np_smooth = spl(date_num_smooth)
         plt.cla()
         plt.xticks(rotation=45, ha='right')
