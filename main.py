@@ -66,16 +66,24 @@ def mail(update, context):
 
         message += '\n-'
         for key in data:
+            income = data[key]['stock_num'] * bid - data[key]['stock_num'] * data[key]['avg_price']
+            income_pct = ((bid - data[key]['avg_price']) / data[key]['avg_price']) * 100
+            personal_holdings = data[key]['stock_num'] * bid
             direction_pic = '🐠'
-            direction_text = ' всрал '
+            #direction_text = ' всрал '
+            direction_sign = '-'
+            if income_pct < -10:
+                direction_pic = '🐟'
+            if income_pct < -15:
+                direction_pic = '🦠'
             if data[key]['avg_price'] < bid:
                 direction_pic = '🦈'
-                direction_text = ' поднял '
-            income = data[key]['stock_num'] * bid - data[key]['stock_num'] * data[key]['avg_price']
-            message += '\n' + direction_pic + ' ' + data[key]['name'] + direction_text + f"{abs(int(income)):,}" + '₽'
+                #direction_text = ' поднял '
+                direction_sign = '+'
+            message += '\n' + direction_pic + ' ' + data[key]['name'] + ' ' + direction_sign + f"{abs(int(income)):,}" + '₽ (' + direction_sign + str(abs(int(income_pct))) + '%)'
             # Статистика
             balance += income
-            overall_mail_holdings += data[key]['stock_num'] * bid
+            overall_mail_holdings += personal_holdings
 
         direction_stat = ' всрато '
         if balance > 0:
@@ -84,7 +92,8 @@ def mail(update, context):
         
         # Выводим результат
         context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-    except:
+    except Exception as e:
+        print(e)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Stock market is not available")
 
 def quote(update, context):
