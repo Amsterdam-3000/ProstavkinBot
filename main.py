@@ -15,50 +15,56 @@ import re
 from scipy.interpolate import make_interp_spline
 
 config = dotenv_values("conf.env")
-bot_token = config['bot_token']  #prostavushka_bot
-chat_id = config['bot_token']  #chat_id Amsterdam
-db_conf = config['db']
+bot_token = config['bot_token']  # prostavushka_bot
 db_login_password = config['db_login_password']
 kolya_superdry_allowed_user_id = config['kolya_superdry_allowed_user_id']
 home_dir = config['home_dir']
 
-updater = Updater(token=bot_token, use_context=True)  #запуск экземпляра бота
+updater = Updater(token=bot_token, use_context=True)  # запуск экземпляра бота
 
 dispatcher = updater.dispatcher
+
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I'm ProstavushkaBot, supported commands:"
                                                                     "/dima - Time since @usebooz started his project")
+
+
 def dima(update, context):
     start = dt.fromtimestamp(1615969080)
     end = dt.now()
-    elapsed=end-start
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Time since @usebooz started his project: %02d days %02d hours %02d minutes %02d seconds" % (elapsed.days, elapsed.seconds // 3600, elapsed.seconds // 60 % 60, elapsed.seconds % 60))
+    elapsed = end - start
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="Time since @usebooz started his project: %02d days %02d hours %02d minutes "
+                                  "%02d seconds" % (
+                                      elapsed.days, elapsed.seconds // 3600, elapsed.seconds // 60 % 60,
+                                      elapsed.seconds % 60))
+
 
 def mail(update, context):
     try:
-        mail_info =Ticker("MAIL.ME").info
+        mail_info = Ticker("MAIL.ME").info
         bid = float(mail_info["regularMarketPrice"])
-        regularMarketPreviousClose = float(mail_info["regularMarketPreviousClose"])
+        regular_market_previous_close = float(mail_info["regularMarketPreviousClose"])
         if bid != 0:
-            change = regularMarketPreviousClose/bid
-            message = "Mail.ru price: %02d ₽\nregularMarketPreviousClose: %02d ₽\n" % (bid, regularMarketPreviousClose)
-            percent = ((bid - regularMarketPreviousClose) / regularMarketPreviousClose) * 100
+            message = "Mail.ru price: %02d ₽\nregularMarketPreviousClose: %02d ₽\n" % (
+            bid, regular_market_previous_close)
+            percent = ((bid - regular_market_previous_close) / regular_market_previous_close) * 100
             if percent > 0:
-                message += "upwards trend 📈 +%.2f %%"  % percent
+                message += "upwards trend 📈 +%.2f %%" % percent
             else:
-                message += "downwards trend 📉 %.2f %%"  % percent
+                message += "downwards trend 📉 %.2f %%" % percent
         else:
-            bid = regularMarketPreviousClose
+            bid = regular_market_previous_close
             message = "Рынок закрыт\nЦена закрытия: " + f"{abs(int(bid)):,}" + '₽'
         # Считаем прибыль
         data = {
-        'roman': {'name': 'Роман', 'stock_num': 205, 'avg_price': 1851},
-        'ivan': {'name': 'Вано', 'stock_num': 95, 'avg_price': 1996},
-        'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
-        'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
-        'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
-        'dima': {'name': 'Dimasique', 'stock_num': 2, 'avg_price': 1707}
+            'roman': {'name': 'Роман', 'stock_num': 205, 'avg_price': 1851},
+            'ivan': {'name': 'Вано', 'stock_num': 95, 'avg_price': 1996},
+            'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
+            'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
+            'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
+            'dima': {'name': 'Dimasique', 'stock_num': 2, 'avg_price': 1707}
         }
 
         balance = 0
@@ -70,7 +76,7 @@ def mail(update, context):
             income_pct = ((bid - data[key]['avg_price']) / data[key]['avg_price']) * 100
             personal_holdings = data[key]['stock_num'] * bid
             direction_pic = '🐠'
-            #direction_text = ' всрал '
+            # direction_text = ' всрал '
             direction_sign = '-'
             if income_pct < -10:
                 direction_pic = '🐟'
@@ -78,9 +84,10 @@ def mail(update, context):
                 direction_pic = '🦠'
             if data[key]['avg_price'] < bid:
                 direction_pic = '🦈'
-                #direction_text = ' поднял '
+                # direction_text = ' поднял '
                 direction_sign = '+'
-            message += '\n' + direction_pic + ' ' + data[key]['name'] + ' ' + direction_sign + f"{abs(int(income)):,}" + '₽ (' + direction_sign + str(abs(int(income_pct))) + '%)'
+            message += '\n' + direction_pic + ' ' + data[key]['name'] + ' ' + direction_sign + \
+                       f"{abs(int(income)):,}" + '₽ (' + direction_sign + str(abs(int(income_pct))) + '%)'
             # Статистика
             balance += income
             overall_mail_holdings += personal_holdings
@@ -88,13 +95,15 @@ def mail(update, context):
         direction_stat = ' всрато '
         if balance > 0:
             direction_stat = ' поднято '
-        message += '\n-\n' + '💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}" + '₽\n💵 По текущему курсу инвестировано ' + f"{int(overall_mail_holdings):,}" + '₽'
-        
+        message += '\n-\n' + '💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}" + \
+                   '₽\n💵 По текущему курсу инвестировано ' + f"{int(overall_mail_holdings):,}" + '₽'
+
         # Выводим результат
         context.bot.send_message(chat_id=update.effective_chat.id, text=message)
     except Exception as e:
         print(e)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Stock market is not available")
+
 
 def quote(update, context):
     f = forismatic.ForismaticPy()
@@ -104,30 +113,34 @@ def quote(update, context):
     message = '🔮 ' + f.get_Quote('ru')[0] + author
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
-path = home_dir+'kolya.png'
-path_tmp = home_dir+'kolya_tmp.png'
+
+path = home_dir + 'kolya.png'
+path_tmp = home_dir + 'kolya_tmp.png'
 wrapper = textwrap.TextWrapper(width=35)
 
-client = MongoClient("mongodb+srv://" + db_login_password + "@realmcluster.yzc9u.mongodb.net/" + db_conf)
+client = MongoClient("mongodb+srv://" + db_login_password + "@realmcluster.yzc9u.mongodb.net")
 db = client['db']
-collection = db[db_conf]
+collection = db['prod']
+
 
 def send_quote(chat_id, message):
-    font_size = 14 - int(len(message)/50)
-    unicode_font = ImageFont.truetype(home_dir+"DejaVuSans.ttf", font_size)
+    font_size = 14 - int(len(message) / 50)
+    unicode_font = ImageFont.truetype(home_dir + "DejaVuSans.ttf", font_size)
     im = Image.open(path)
     draw_text = ImageDraw.Draw(im)
     draw_text.text(
-        (60,45),
+        (60, 45),
         message,
         font=unicode_font,
-        fill=('#1C0606')
-        )
+        fill='#1C0606'
+    )
     im.save(path_tmp)
     updater.bot.send_photo(chat_id=chat_id, photo=open(path_tmp, 'rb'))
 
-def kolya_wisdom (update, context):
-    rnd = randint(0,100)
+
+def kolya_wisdom(update, context):
+    rnd = randint(0, 100)
+    message = ""
     if rnd >= 0:
         for item in collection.find({"kolya_wisdom": 1}):
             message = wrapper.fill(text=choice(item["quotes"])) + "\n\n                       - Николай Бутенко"
@@ -139,25 +152,27 @@ def kolya_wisdom (update, context):
         message = wrapper.fill(text=f.get_Quote('ru')[0]) + author
     send_quote(update.effective_chat.id, message)
 
-def kolya_superdry (update, context):
+
+def kolya_superdry(update, context):
     date_format = "%d.%m.%Y"
+    message = ""
     if context.args:
-        if update.message.from_user['id']: 
+        if update.message.from_user['id']:
             if int(update.message.from_user['id']) == int(kolya_superdry_allowed_user_id):
                 try:
-                    weight = round(float(context.args[0].replace(",",".")),2)
+                    weight = round(float(context.args[0].replace(",", ".")), 2)
                     message = "⚖️ Сегодняшний вес - " + str(weight) + " кг"
                     today = date.today()
                     d1 = today.strftime(date_format)
                     query = {"date": d1}
-                    values = {"kolya_superdry": 1,"date": d1,"weight": weight}
+                    values = {"kolya_superdry": 1, "date": d1, "weight": weight}
 
                     find_result = collection.find(query)
                     if find_result.count() == 0:
                         if collection.save(values):
                             message += "\n☁️ Успешно добавлен в ОБЛАЧНУЮ БД"
                     else:
-                        if collection.update_one(query, { "$set": values}):
+                        if collection.update_one(query, {"$set": values}):
                             message += "\n☁️ Успешно обновлен в ОБЛАЧНОЙ БД"
                 except:
                     message = "Что-то пошло не так"
@@ -173,22 +188,25 @@ def kolya_superdry (update, context):
             # message += item['date'] + ' - ' + str(item['weight']) + ' кг\n'
             x_array.append(datetime(int(item['date'][6:10]), int(item['date'][3:5]), int(item['date'][:2])))
             y_array.append(item['weight'])
-        number_of_days = datetime.strptime(weight_list[-1]['date'], date_format) - datetime.strptime(weight_list[0]['date'], date_format)
+        number_of_days = datetime.strptime(weight_list[-1]['date'], date_format) - datetime.strptime(
+            weight_list[0]['date'], date_format)
         number_of_days_including_current = number_of_days.days + 1
         message += '⚖️ Начало (' + str(weight_list[0]['date']) + ') - ' + str(weight_list[0]['weight']) + ' кг\n'
         message += '⚖️ Сейчас (' + str(weight_list[-1]['date']) + ') - ' + str(weight_list[-1]['weight']) + ' кг\n'
         weight_diff = weight_list[-1]['weight'] - weight_list[0]['weight']
         if weight_diff > 0:
-        	weight_diff_dir = '👎 Набрал '
+            weight_diff_dir = '👎 Набрал '
         else:
-        	weight_diff_dir = '👍 Сбросил '
-        message += weight_diff_dir + str(abs(round(weight_diff,2))) + ' кг за ' + str(number_of_days_including_current) + ' дн.\n'
-        message += '📋 В среднем по ' + str(abs(round((weight_diff/number_of_days_including_current),2))) + ' кг в день'
+            weight_diff_dir = '👍 Сбросил '
+        message += weight_diff_dir + str(abs(round(weight_diff, 2))) + ' кг за ' + str(
+            number_of_days_including_current) + ' дн.\n'
+        message += '📋 В среднем по ' + str(
+            abs(round((weight_diff / number_of_days_including_current), 2))) + ' кг в день'
         x_np_array = np.array(x_array)
         y_np_array = np.array(y_array)
         date_num = dates.date2num(x_np_array)
         # smooth
-        date_num_smooth = np.linspace(date_num.min(), date_num.max()) 
+        date_num_smooth = np.linspace(date_num.min(), date_num.max())
         spl = make_interp_spline(date_num, y_np_array, k=1)
         y_np_smooth = spl(date_num_smooth)
         plt.cla()
@@ -196,9 +214,11 @@ def kolya_superdry (update, context):
         plt.plot(dates.num2date(date_num_smooth), y_np_smooth)
         plt.tight_layout()
         plt.savefig(home_dir + 'kolya_superdry.png')
-        context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'), caption=message)
+        context.bot.send_photo(chat_id=update.effective_chat.id, photo=open(home_dir + 'kolya_superdry.png', 'rb'),
+                               caption=message)
 
-def kolya_history(update, context): 
+
+def kolya_history(update, context):
     if context.args:
         quotes = list(db.kolya_quotes_history.find({'msg': re.compile(context.args[0], re.IGNORECASE)}))
         if len(quotes) == 0:
@@ -206,8 +226,10 @@ def kolya_history(update, context):
     else:
         quotes = list(db.kolya_quotes_history.find({'msg': re.compile("^(ебать|бля|пиздец).{7,}", re.IGNORECASE)}))
     quote = choice(quotes)
-    message = wrapper.fill(text=quote['msg']) + "\n\n           - Николай Бутенко, {}".format(quote['date'].strftime('%d.%m.%Y'))
+    message = wrapper.fill(text=quote['msg']) + "\n\n           - Николай Бутенко, {}".format(
+        quote['date'].strftime('%d.%m.%Y'))
     send_quote(update.effective_chat.id, message)
+
 
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('dima', dima))
