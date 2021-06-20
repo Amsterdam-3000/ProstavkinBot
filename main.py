@@ -1,5 +1,7 @@
-from telegram.ext import Updater, CommandHandler
-from datetime import datetime as dt
+import logging
+from logging.handlers import RotatingFileHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from apscheduler.schedulers.background import BackgroundScheduler
 from yfinance import Ticker
 from forismatic import *
 from PIL import Image, ImageDraw, ImageFont
@@ -7,12 +9,22 @@ import textwrap
 from dotenv import dotenv_values
 from pymongo import MongoClient
 from random import choice, randint
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+import pytz
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
 import re
 from scipy.interpolate import make_interp_spline
+
+# https://youtrack.jetbrains.com/issue/PY-39762
+# noinspection PyArgumentList
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s [%(levelname)s] %(message)s',
+                    handlers=[
+                        logging.handlers.RotatingFileHandler('bot.log', maxBytes=100000, backupCount=5),
+                        logging.StreamHandler()
+                    ])
 
 config = dotenv_values("conf.env")
 bot_token = config['bot_token']  # prostavushka_bot
@@ -22,8 +34,6 @@ home_dir = config['home_dir']
 
 updater = Updater(token=bot_token, use_context=True)  # запуск экземпляра бота
 
-dispatcher = updater.dispatcher
-
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I'm ProstavushkaBot, supported commands:"
@@ -31,8 +41,8 @@ def start(update, context):
 
 
 def dima(update, context):
-    start = dt.fromtimestamp(1615969080)
-    end = dt.now()
+    start = datetime.fromtimestamp(1615969080)
+    end = datetime.now()
     elapsed = end - start
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="Time since @usebooz started his project: %02d days %02d hours %02d minutes "
@@ -48,7 +58,7 @@ def mail(update, context):
         regular_market_previous_close = float(mail_info["regularMarketPreviousClose"])
         if bid != 0:
             message = "Mail.ru price: %02d ₽\nregularMarketPreviousClose: %02d ₽\n" % (
-            bid, regular_market_previous_close)
+                bid, regular_market_previous_close)
             percent = ((bid - regular_market_previous_close) / regular_market_previous_close) * 100
             if percent > 0:
                 message += "upwards trend 📈 +%.2f %%" % percent
@@ -231,12 +241,155 @@ def kolya_history(update, context):
     send_quote(update.effective_chat.id, message)
 
 
-dispatcher.add_handler(CommandHandler('start', start))
-dispatcher.add_handler(CommandHandler('dima', dima))
-dispatcher.add_handler(CommandHandler('mail', mail))
-dispatcher.add_handler(CommandHandler('quote', quote))
-dispatcher.add_handler(CommandHandler('kolya_wisdom', kolya_wisdom))
-dispatcher.add_handler(CommandHandler('kolya_superdry', kolya_superdry))
-dispatcher.add_handler(CommandHandler('kolya_history', kolya_history))
+def calc_score(msg):
+    text_score = len(msg.get('text', ''))
+    sticker_score = len(msg.get('sticker_emoji', '')) * 10
+    photo_score = msg.get('with_photo', False) * 15
+    return text_score + sticker_score + photo_score + 5
+
+
+def aggregate_all_pidor_stats(date_from, date_to) -> {}:
+    logging.info("Aggregating from date: {}, to date: {}".format(date_from, date_to))
+
+    all_scores = {}
+    for msg in db.all_messages.find(filter={
+        'date': {'$gte': date_from, '$lt': date_to}
+    }, sort=[('date', 1), ('message_id', 1)]):
+        chat_id = msg['chat_id']
+        user_id = msg['user_id']
+
+        scores = all_scores.get(chat_id, {})
+        score = scores.get(user_id, 0)
+        score += calc_score(msg)
+        scores[user_id] = score
+        all_scores[chat_id] = scores
+
+    result = {}
+    for chat_id, scores in all_scores.items():
+        result[chat_id] = sorted(scores.items(), key=lambda pair: pair[1], reverse=True)
+    return result
+
+
+def format_user_name(chat_id, user_id):
+    try:
+        user_name = updater.bot.get_chat_member(chat_id=chat_id, user_id=user_id).user.username
+    except Exception as e:
+        logging.error("Can't get user name for chat id {} and user id {}: {}".format(chat_id, user_id, e))
+        user_name = "{}".format(user_id)
+    return user_name
+
+
+def format_pidor_stats_body(scores, chat_id) -> "":
+    lines = []
+    for user_id, score in scores:
+        lines.append("{}: {}".format(format_user_name(chat_id, user_id), score))
+    for i, line in enumerate(lines):
+        if i == len(lines)-1:
+            line = "👎 " + line
+        elif i == 0:
+            line = "👍 " + line
+        else:
+            line = "👌 " + line
+        lines[i] = line
+    return "\n".join(lines)
+
+
+def monthly_pidor_so_far(update, context):
+    date_to = datetime.now()
+    date_from = date_to.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    scores = aggregate_all_pidor_stats(date_from, date_to).get(update.effective_chat.id)
+    if scores is None:
+        update.effective_chat.send_message(text="Недостаточно статистики :С")
+        return
+
+    body = "Рейтинг активности на звание пидора месяца в *{}*:\n".format(format_month(date_from))
+    body += format_pidor_stats_body(scores, update.effective_chat.id)
+    updater.bot.send_message(chat_id=update.effective_chat.id, text=body, parse_mode="markdown")
+
+
+def monthly_pidor_cron():
+    now = datetime.now()
+    date_to = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    date_from = (date_to - timedelta(days=1)).replace(day=1)
+
+    cron_exec_id = "{}".format(date_from.strftime("monthly_pidor_cron-%Y-%m"))
+    execution = db.cron_executions.find_one({"_id": cron_exec_id})
+    if execution is not None:
+        logging.info("Already executed on {}".format(execution["date"]))
+        return
+
+    for chat_id, scores in aggregate_all_pidor_stats(date_from, date_to).items():
+        send_pidor_winner_message(chat_id, date_from, scores)
+
+    db.cron_executions.insert_one({"_id": cron_exec_id, "date": datetime.now()})
+
+
+def send_pidor_winner_message(chat_id, date_from, scores):
+    winner_user_id, score = scores[len(scores) - 1]
+    winner_name = format_user_name(chat_id, winner_user_id)
+    body = "Пидором месяца в *{}* становится @{}, проявив наименьшую активность с рейтингом *{}*! " \
+           "Поздравляем победителя 🎉🎉🎉".format(format_month(date_from), winner_name, score)
+    body += "\nТаблица результатов:\n" + format_pidor_stats_body(scores, chat_id)
+    updater.bot.send_message(chat_id=chat_id, text=body, parse_mode="markdown")
+
+
+def format_month(d):
+    return [
+        '',
+        'январе',
+        'феврале',
+        'марте',
+        'апреле',
+        'мае',
+        'июне',
+        'июле',
+        'августе',
+        'сентябре',
+        'октябре',
+        'ноябре',
+        'декабре',
+    ][d.month]
+
+
+def all_messages_handler(update, context):
+    msg = update.effective_message
+
+    text = ""
+    if msg.text is not None:
+        text = msg.text
+    sticker_emoji = ""
+    if msg.sticker is not None:
+        sticker_emoji = msg.sticker.emoji
+
+    db.all_messages.update_one(
+        {
+            'chat_id': update.effective_chat.id,
+            'message_id': msg.message_id,
+        },
+        {
+            '$set': {
+                'user_id': msg.from_user.id,
+                'date': msg.date,
+                'text': text,
+                'sticker_emoji': sticker_emoji,
+                'with_photo': len(msg.photo) > 0
+            }
+        }, upsert=True)
+
+
+scheduler = BackgroundScheduler(timezone=pytz.timezone('Europe/Moscow'))
+scheduler.add_job(monthly_pidor_cron, 'cron', hour=12, minute=0)
+scheduler.start()
+
+updater.dispatcher.add_handler(CommandHandler('start', start))
+updater.dispatcher.add_handler(CommandHandler('dima', dima))
+updater.dispatcher.add_handler(CommandHandler('mail', mail))
+updater.dispatcher.add_handler(CommandHandler('quote', quote))
+updater.dispatcher.add_handler(CommandHandler('kolya_wisdom', kolya_wisdom))
+updater.dispatcher.add_handler(CommandHandler('kolya_superdry', kolya_superdry))
+updater.dispatcher.add_handler(CommandHandler('kolya_history', kolya_history))
+updater.dispatcher.add_handler(CommandHandler('monthly_pidor', monthly_pidor_so_far))
+updater.dispatcher.add_handler(MessageHandler(Filters.update.messages & (~Filters.command), all_messages_handler))
 
 updater.start_polling()
+updater.idle()
