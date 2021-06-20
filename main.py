@@ -272,10 +272,17 @@ def aggregate_all_pidor_stats(date_from, date_to) -> {}:
 
 def format_user_name(chat_id, user_id):
     try:
-        user_name = updater.bot.get_chat_member(chat_id=chat_id, user_id=user_id).user.username
+        user = updater.bot.get_chat_member(chat_id=chat_id, user_id=user_id).user
+        user_name = " ".join(filter(None, [user.first_name, user.last_name]))
+        if user_name == " ":
+            user_name = user.username
     except Exception as e:
         logging.error("Can't get user name for chat id {} and user id {}: {}".format(chat_id, user_id, e))
-        user_name = "{}".format(user_id)
+        user_name = {
+            480112849: "ipesenko",
+            52404355: "Dudchenko"
+        }[user_id] or "{}".format(user_id)
+    user_name = user_name.replace("_", "\\_")
     return user_name
 
 
@@ -294,17 +301,22 @@ def format_pidor_stats_body(scores, chat_id) -> "":
     return "\n".join(lines)
 
 
-def monthly_pidor_so_far(update, context):
+def monthly_pidor_so_far_raw(chat_id):
     date_to = datetime.now()
     date_from = date_to.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    scores = aggregate_all_pidor_stats(date_from, date_to).get(update.effective_chat.id)
+    scores = aggregate_all_pidor_stats(date_from, date_to).get(chat_id)
     if scores is None:
-        update.effective_chat.send_message(text="Недостаточно статистики :С")
+        updater.bot.send_message(chat_id=chat_id, text="Недостаточно статистики :С")
         return
 
     body = "Рейтинг активности на звание пидора месяца в *{}*:\n".format(format_month(date_from))
-    body += format_pidor_stats_body(scores, update.effective_chat.id)
-    updater.bot.send_message(chat_id=update.effective_chat.id, text=body, parse_mode="markdown")
+    body += format_pidor_stats_body(scores, chat_id)
+    updater.bot.send_message(chat_id=chat_id, text=body, parse_mode="markdown")
+
+
+def monthly_pidor_so_far(update, context):
+    logging.info("monthly_pidor_so_far: {}".format(update))
+    monthly_pidor_so_far_raw(update.effective_chat.id)
 
 
 def monthly_pidor_cron():
