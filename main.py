@@ -242,7 +242,7 @@ def kolya_history(update, context):
 
 
 def calc_score(msg):
-    text_score = len(msg.get('text', ''))
+    text_score = min(len(msg.get('text', '')), 50)
     sticker_score = len(msg.get('sticker_emoji', '')) * 10
     photo_score = msg.get('with_photo', False) * 15
     return text_score + sticker_score + photo_score + 5
