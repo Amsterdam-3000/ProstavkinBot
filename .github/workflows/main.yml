@@ -27,7 +27,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Copy files
-        run: cp -rv ./ /home/ubuntu/prostavushka_bot/
+        run: rsync -aWz --progress ./ /home/ubuntu/prostavushka_bot/ --exclude .git*
 
       # Runs a set of commands using the runners shell
       - name: Restart supervisord service
