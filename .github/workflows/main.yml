@@ -32,3 +32,15 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Restart supervisord service
         run: sudo systemctl restart supervisord.service
+
+      - name: Send failure notifications to Telegram
+        if: ${{ failure() }}
+        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
+        env:
+          MESSAGE: "CI failed"
+
+      - name: Send success notifications to Telegram
+        if: ${{ success() }}
+        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
+        env:
+          MESSAGE: "I'm just successfuly updated"
