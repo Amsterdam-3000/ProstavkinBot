@@ -303,6 +303,9 @@ def format_pidor_stats_body(scores, chat_id) -> "":
 
 def monthly_pidor_so_far_raw(chat_id):
     date_to = datetime.now()
+    if (date_to + timedelta(days=1)).month != date_to.month:
+        updater.bot.send_message(chat_id=chat_id, text="В последний день месяца нельзя смотреть статистику!")
+        return
     date_from = date_to.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     scores = aggregate_all_pidor_stats(date_from, date_to).get(chat_id)
     if scores is None:
