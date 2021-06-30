@@ -43,4 +43,4 @@ jobs:
         if: ${{ success() }}
         run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
         env:
-          MESSAGE: "I'm just successfuly updated! \n What's new: {{ github.event.head_commit.message }}"
+          MESSAGE: "I'm just successfuly updated! \n What's new: ${{ github.event.head_commit.message }}"
