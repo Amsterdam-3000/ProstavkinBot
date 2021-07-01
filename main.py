@@ -342,8 +342,8 @@ def monthly_pidor_cron():
 def send_pidor_winner_message(chat_id, date_from, scores):
     winner_user_id, score = scores[len(scores) - 1]
     winner_name = format_user_name(chat_id, winner_user_id)
-    body = "Пидором месяца в *{}* становится @{}, проявив наименьшую активность с рейтингом *{}*! " \
-           "Поздравляем победителя 🎉🎉🎉".format(format_month(date_from), winner_name, score)
+    body = "Пидором месяца в *{}* становится [{}](tg://user?id={}), проявив наименьшую активность с рейтингом *{}*! " \
+           "Поздравляем победителя 🎉🎉🎉".format(format_month(date_from), winner_name, winner_user_id, score)
     body += "\nТаблица результатов:\n" + format_pidor_stats_body(scores, chat_id)
     updater.bot.send_message(chat_id=chat_id, text=body, parse_mode="markdown")
 
