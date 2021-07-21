@@ -2,7 +2,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from apscheduler.schedulers.background import BackgroundScheduler
-from yfinance import Ticker
 from forismatic import *
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
@@ -15,6 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
 import re
+import requests
 from scipy.interpolate import make_interp_spline
 
 # https://youtrack.jetbrains.com/issue/PY-39762
@@ -53,9 +53,10 @@ def dima(update, context):
 
 def mail(update, context):
     try:
-        mail_info = Ticker("MAIL.ME").info
-        bid = float(mail_info["regularMarketPrice"])
-        regular_market_previous_close = float(mail_info["regularMarketPreviousClose"])
+        resp = requests.get(
+            "https://eodhistoricaldata.com/api/real-time/MAIL.MCX?api_token=60f7ee9a697e04.95301398&fmt=json").json()
+        bid = float(resp["close"])
+        regular_market_previous_close = float(resp["previousClose"])
         if bid != 0:
             message = "Mail.ru price: %02d ₽\nregularMarketPreviousClose: %02d ₽\n" % (
                 bid, regular_market_previous_close)
