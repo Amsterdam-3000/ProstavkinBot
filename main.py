@@ -328,16 +328,8 @@ def monthly_pidor_cron():
     date_to = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     date_from = (date_to - timedelta(days=1)).replace(day=1)
 
-    cron_exec_id = "{}".format(date_from.strftime("monthly_pidor_cron-%Y-%m"))
-    execution = db.cron_executions.find_one({"_id": cron_exec_id})
-    if execution is not None:
-        logging.info("Already executed on {}".format(execution["date"]))
-        return
-
     for chat_id, scores in aggregate_all_pidor_stats(date_from, date_to).items():
         send_pidor_winner_message(chat_id, date_from, scores)
-
-    db.cron_executions.insert_one({"_id": cron_exec_id, "date": datetime.now()})
 
 
 def send_pidor_winner_message(chat_id, date_from, scores):
