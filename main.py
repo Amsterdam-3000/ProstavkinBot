@@ -279,10 +279,7 @@ def format_user_name(chat_id, user_id):
             user_name = user.username
     except Exception as e:
         logging.error("Can't get user name for chat id {} and user id {}: {}".format(chat_id, user_id, e))
-        user_name = {
-            480112849: "ipesenko",
-            52404355: "Dudchenko"
-        }[user_id] or "{}".format(user_id)
+        user_name = "{}".format(user_id)
     user_name = user_name.replace("_", "\\_")
     return user_name
 
@@ -292,7 +289,7 @@ def format_pidor_stats_body(scores, chat_id) -> "":
     for user_id, score in scores:
         lines.append("{}: {}".format(format_user_name(chat_id, user_id), score))
     for i, line in enumerate(lines):
-        if i == len(lines)-1:
+        if i == len(lines) - 1:
             line = "👎 " + line
         elif i == 0:
             line = "👍 " + line
