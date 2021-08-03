@@ -322,6 +322,8 @@ def monthly_pidor_so_far(update, context):
 
 def monthly_pidor_cron():
     now = datetime.now()
+    if now.day != 1:
+        return
     date_to = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     date_from = (date_to - timedelta(days=1)).replace(day=1)
 
