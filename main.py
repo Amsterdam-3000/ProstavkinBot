@@ -258,15 +258,18 @@ def kolya_history(update, context):
     send_quote(update.effective_chat.id, message)
 
 
-def calc_score(msg):
+def calc_score(msg, last_user_id):
     text_score = min(len(msg.get('text', '')), 50)
     sticker_score = len(msg.get('sticker_emoji', '')) * 10
     photo_score = msg.get('with_photo', False) * 15
-    return text_score + sticker_score + photo_score + 5
+    new_msg_score = 5 * (msg['user_id'] != last_user_id)
+    return text_score + sticker_score + photo_score + new_msg_score
 
 
 def aggregate_all_pidor_stats(date_from, date_to) -> {}:
     logging.info("Aggregating from date: {}, to date: {}".format(date_from, date_to))
+
+    last_user_id = 0
 
     all_scores = {}
     for msg in db.all_messages.find(filter={
@@ -277,9 +280,11 @@ def aggregate_all_pidor_stats(date_from, date_to) -> {}:
 
         scores = all_scores.get(chat_id, {})
         score = scores.get(user_id, 0)
-        score += calc_score(msg)
+        score += calc_score(msg, last_user_id)
         scores[user_id] = score
         all_scores[chat_id] = scores
+
+        last_user_id = user_id
 
     result = {}
     for chat_id, scores in all_scores.items():
