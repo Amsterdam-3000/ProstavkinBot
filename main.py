@@ -94,7 +94,7 @@ def mail(update, context):
             if income_pct < -15:
                 direction_pic = '🦠'
             if income_pct < -25:
-                direction_pic = '🧫'
+                direction_pic = '🍣'
             if data[key]['avg_price'] < bid:
                 direction_pic = '🦈'
                 # direction_text = ' поднял '
