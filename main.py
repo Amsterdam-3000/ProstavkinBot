@@ -16,6 +16,7 @@ import numpy as np
 import re
 import requests
 from scipy.interpolate import make_interp_spline
+from operator import itemgetter
 
 # https://youtrack.jetbrains.com/issue/PY-39762
 # noinspection PyArgumentList
@@ -80,11 +81,12 @@ def mail(update, context):
 
         balance = 0
         overall_mail_holdings = 0
-
+        income_pcts = []
         message += '\n-'
         for key in data:
             income = data[key]['stock_num'] * bid - data[key]['stock_num'] * data[key]['avg_price']
             income_pct = ((bid - data[key]['avg_price']) / data[key]['avg_price']) * 100
+            income_pcts.append({'name': data[key]['name'], 'income_pct': income_pct})
             personal_holdings = data[key]['stock_num'] * bid
             direction_pic = '🐠'
             # direction_text = ' всрал '
@@ -104,6 +106,14 @@ def mail(update, context):
             # Статистика
             balance += income
             overall_mail_holdings += personal_holdings
+
+        income_pcts_sorted = sorted(income_pcts, key = itemgetter('income_pct'))
+        index = message.find(income_pcts_sorted[0].get('name'))
+        message = message[:index-1] + '🥇' + message[index:]
+        index = message.find(income_pcts_sorted[1].get('name'))
+        message = message[:index-1] + '🥈' + message[index:]
+        index = message.find(income_pcts_sorted[2].get('name'))
+        message = message[:index-1] + '🥉' + message[index:]
 
         direction_stat = ' всрато '
         if balance > 0:
