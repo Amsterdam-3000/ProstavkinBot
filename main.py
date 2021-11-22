@@ -72,7 +72,7 @@ def mail(update, context):
         # Считаем прибыль
         data = {
             'roman': {'name': 'Роман', 'stock_num': 205, 'avg_price': 1851},
-            'ivan': {'name': 'Вано', 'stock_num': 95, 'avg_price': 1996},
+            'ivan': {'name': 'Вано', 'stock_num': 195, 'avg_price': 1627},
             'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
             'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
             'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
@@ -97,6 +97,10 @@ def mail(update, context):
                 direction_pic = '🦠'
             if income_pct < -25:
                 direction_pic = '🍣'
+            if income_pct < -35:
+                direction_pic = '🗿'
+            if income_pct < -50:
+                direction_pic = '💩'
             if data[key]['avg_price'] < bid:
                 direction_pic = '🦈'
                 # direction_text = ' поднял '
