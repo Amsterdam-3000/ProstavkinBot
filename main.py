@@ -55,7 +55,7 @@ def dima(update, context):
 def mail(update, context):
     try:
         resp = requests.get(
-            "https://eodhistoricaldata.com/api/real-time/MAIL.MCX?api_token=60f7ee9a697e04.95301398&fmt=json").json()
+            "https://eodhistoricaldata.com/api/real-time/VKCO.MCX?api_token=60f7ee9a697e04.95301398&fmt=json").json()
         bid = float(resp["close"])
         regular_market_previous_close = float(resp["previousClose"])
         if bid != 0:
