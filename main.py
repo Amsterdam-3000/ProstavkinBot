@@ -59,13 +59,13 @@ def mail(update, context):
         bid = float(resp["close"])
         regular_market_previous_close = float(resp["previousClose"])
         if bid != 0:
-            message = "Mail.ru price: %02d ₽\nregularMarketPreviousClose: %02d ₽\n" % (
+            message = "Цена: %02d ₽\nПредыдущее закрытие: %02d ₽\n" % (
                 bid, regular_market_previous_close)
             percent = ((bid - regular_market_previous_close) / regular_market_previous_close) * 100
             if percent > 0:
-                message += "upwards trend 📈 +%.2f %%" % percent
+                message += "Растем 📈 +%.2f %%" % percent
             else:
-                message += "downwards trend 📉 %.2f %%" % percent
+                message += "Падаем 📉 %.2f %%" % percent
         else:
             bid = regular_market_previous_close
             message = "Рынок закрыт\nЦена закрытия: " + f"{abs(int(bid)):,}" + '₽'
@@ -75,7 +75,7 @@ def mail(update, context):
             'ivan': {'name': 'Вано', 'stock_num': 195, 'avg_price': 1627},
             'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
             'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
-            'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
+            #'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
             'dima': {'name': 'Dimasique', 'stock_num': 3, 'avg_price': 1652}
         }
 
@@ -122,7 +122,8 @@ def mail(update, context):
         direction_stat = ' всрато '
         if balance > 0:
             direction_stat = ' поднято '
-        message += '\n-\n' + '💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}" + \
+        take_money = '\n-\n' + '❌💩🥈Брат Коли -43,240₽ (-55%)'
+        message += take_money + '\n-\n' + '💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}" + \
                    '₽\n💵 По текущему курсу инвестировано ' + f"{int(overall_mail_holdings):,}" + '₽'
 
         # Выводим результат
