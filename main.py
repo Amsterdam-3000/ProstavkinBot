@@ -65,7 +65,7 @@ def mail(update, context):
             if percent > 0:
                 message += "Растем 📈 +%.2f %%" % percent
             else:
-                message += "Падаем 📉 %.2f %%" % percent
+                message += "Отрицательно растем 📉 %.2f %%" % percent
         else:
             bid = regular_market_previous_close
             message = "Рынок закрыт\nЦена закрытия: " + f"{abs(int(bid)):,}" + '₽'
@@ -81,6 +81,7 @@ def mail(update, context):
 
         balance = 0
         overall_mail_holdings = 0
+        overall_mail_investments = 0
         income_pcts = []
         message += '\n-'
         for key in data:
@@ -88,6 +89,7 @@ def mail(update, context):
             income_pct = ((bid - data[key]['avg_price']) / data[key]['avg_price']) * 100
             income_pcts.append({'name': data[key]['name'], 'income_pct': income_pct})
             personal_holdings = data[key]['stock_num'] * bid
+            personal_investments = data[key]['stock_num'] * data[key]['avg_price']
             direction_pic = '🐠'
             # direction_text = ' всрал '
             direction_sign = '-'
@@ -110,6 +112,7 @@ def mail(update, context):
             # Статистика
             balance += income
             overall_mail_holdings += personal_holdings
+            overall_mail_investments += personal_investments
 
         income_pcts_sorted = sorted(income_pcts, key = itemgetter('income_pct'))
         index = message.find(income_pcts_sorted[0].get('name'))
@@ -123,8 +126,8 @@ def mail(update, context):
         if balance > 0:
             direction_stat = ' поднято '
         take_money = '\n-\n' + '❌💩🥈Брат Коли -43,240₽ (-55%)'
-        message += take_money + '\n-\n' + '💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}" + \
-                   '₽\n💵 По текущему курсу инвестировано ' + f"{int(overall_mail_holdings):,}" + '₽'
+        message += take_money + '\n-\n' + '💵 Инвестировано ' + f"{int(overall_mail_investments):,}" + '₽' + '\n💵 Текущая стоимость бумаг ' + f"{int(overall_mail_holdings):,}" + '₽' + \
+                   '\n💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}"  + '₽' 
 
         # Выводим результат
         context.bot.send_message(chat_id=update.effective_chat.id, text=message)
