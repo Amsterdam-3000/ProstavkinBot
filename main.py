@@ -76,7 +76,8 @@ def mail(update, context):
             'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
             'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
             #'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
-            'dima': {'name': 'Dimasique', 'stock_num': 3, 'avg_price': 1652}
+            'dima': {'name': 'Dimasique', 'stock_num': 3, 'avg_price': 1652},
+            'kirienko': {'name': 'Mr.Kirienko', 'stock_num': 50000, 'avg_price': 962}
         }
 
         balance = 0
@@ -110,9 +111,10 @@ def mail(update, context):
             message += '\n' + direction_pic + ' ' + data[key]['name'] + ' ' + direction_sign + \
                        f"{abs(int(income)):,}" + '₽ (' + direction_sign + str(abs(int(income_pct))) + '%)'
             # Статистика
-            balance += income
-            overall_mail_holdings += personal_holdings
-            overall_mail_investments += personal_investments
+            if key != 'kirienko':
+                balance += income
+                overall_mail_holdings += personal_holdings
+                overall_mail_investments += personal_investments
 
         income_pcts_sorted = sorted(income_pcts, key = itemgetter('income_pct'))
         index = message.find(income_pcts_sorted[0].get('name'))
