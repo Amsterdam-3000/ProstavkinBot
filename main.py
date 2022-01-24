@@ -74,7 +74,7 @@ def mail(update, context):
             'roman': {'name': 'Роман', 'stock_num': 205, 'avg_price': 1851},
             'ivan': {'name': 'Вано', 'stock_num': 195, 'avg_price': 1627},
             'nikolay': {'name': 'Пакетя', 'stock_num': 25, 'avg_price': 1890},
-            'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
+            #'serega': {'name': 'Красавчик', 'stock_num': 28, 'avg_price': 2036},
             #'brat_koli': {'name': 'Брат Коли', 'stock_num': 40, 'avg_price': 1944},
             'dima': {'name': 'Dimasique', 'stock_num': 3, 'avg_price': 1652},
             'kirienko': {'name': 'Mr.Kirienko', 'stock_num': 50000, 'avg_price': 962}
@@ -127,7 +127,7 @@ def mail(update, context):
         direction_stat = ' всрато '
         if balance > 0:
             direction_stat = ' поднято '
-        take_money = '\n-\n' + '❌💩🥈Брат Коли -43,240₽ (-55%)'
+        take_money = '\n-\n' + '❌💩🥈Брат Коли -43,240₽ (-55%)' + '\n' + '❌💩🥇Красавчик -40,952₽ (-71%)'
         message += take_money + '\n-\n' + '💵 Инвестировано ' + f"{int(overall_mail_investments):,}" + '₽' + '\n💵 Текущая стоимость бумаг ' + f"{int(overall_mail_holdings):,}" + '₽' + \
                    '\n💰 Общими усилиями' + direction_stat + f"{abs(int(balance)):,}"  + '₽' 
 
