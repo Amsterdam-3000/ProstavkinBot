@@ -25,22 +25,28 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+        #      # Runs a single command using the runners shell
+        #      - name: Copy files
+        #        run: rsync -aWz --progress --exclude=.git* ./ /home/ubuntu/prostavushka_bot/
+        #
+        #      # Runs a set of commands using the runners shell
+        #      - name: Restart supervisord service
+        #        run: sudo systemctl restart supervisord.service
+        #
+        #      - name: Send failure notifications to Telegram
+        #        if: ${{ failure() }}
+        #        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
+        #        env:
+        #          MESSAGE: "CI failed"
+        #
+        #      - name: Send success notifications to Telegram
+        #        if: ${{ success() }}
+        #        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
+        #        env:
+        #          MESSAGE: "I'm just successfuly updated! \n What's new: ${{ github.event.head_commit.message }}"
+
       # Runs a single command using the runners shell
-      - name: Copy files
-        run: rsync -aWz --progress --exclude=.git* ./ /home/ubuntu/prostavushka_bot/
+      - name: Docker build
+        run: docker build -t .
 
-      # Runs a set of commands using the runners shell
-      - name: Restart supervisord service
-        run: sudo systemctl restart supervisord.service
 
-      - name: Send failure notifications to Telegram
-        if: ${{ failure() }}
-        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
-        env:
-          MESSAGE: "CI failed"
-
-      - name: Send success notifications to Telegram
-        if: ${{ success() }}
-        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT }} -d text="${MESSAGE}" >> /dev/null
-        env:
-          MESSAGE: "I'm just successfuly updated! \n What's new: ${{ github.event.head_commit.message }}"
