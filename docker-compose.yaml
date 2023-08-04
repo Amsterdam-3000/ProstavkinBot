@@ -1,0 +1,25 @@
+version: '3.1'
+
+services:
+
+### uncomment for use local mongodb
+#  mongodb:
+#    container_name: mongodb
+#    image: mongo:5.0
+#    restart: always
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: admin
+#      MONGO_INITDB_ROOT_PASSWORD:
+#      MONGO_INITDB_DATABASE: prod
+#    volumes:
+#      - /opt/prostavka/mongo-data:/data/db
+
+  bot:
+    container_name: bot
+    image: eprokudin/prostavkinbot:latest
+#    depends_on:
+#      - mongodb
+    environment:
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - /opt/prostavka/conf.env:/app/conf.env

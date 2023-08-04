@@ -5,7 +5,7 @@ forismatic
 pillow
 #textwrap
 #import
-pymongo==3.13.0
+pymongo==4.4.1
 #random
 #datetime
 pytz

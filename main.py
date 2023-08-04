@@ -30,6 +30,7 @@ logging.basicConfig(level=logging.INFO,
 config = dotenv_values("conf.env")
 bot_token = config['bot_token']  # prostavushka_bot
 db_login_password = config['db_login_password']
+db_host = config['db_host']
 kolya_superdry_allowed_user_id = config['kolya_superdry_allowed_user_id']
 home_dir = config['home_dir']
 
@@ -151,7 +152,7 @@ path = home_dir + 'kolya.png'
 path_tmp = home_dir + 'kolya_tmp.png'
 wrapper = textwrap.TextWrapper(width=35)
 
-client = MongoClient("mongodb://" + db_login_password + "@mongodb")
+client = MongoClient("mongodb+srv://" + db_login_password + "@" + db_host)
 db = client['db']
 collection = db['prod']
 
