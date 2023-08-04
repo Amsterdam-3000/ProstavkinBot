@@ -151,7 +151,7 @@ path = home_dir + 'kolya.png'
 path_tmp = home_dir + 'kolya_tmp.png'
 wrapper = textwrap.TextWrapper(width=35)
 
-client = MongoClient("mongodb+srv://" + db_login_password + "@realmcluster.yzc9u.mongodb.net")
+client = MongoClient("mongodb://" + db_login_password + "@mongodb")
 db = client['db']
 collection = db['prod']
 

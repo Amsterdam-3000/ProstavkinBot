@@ -39,4 +39,4 @@ WORKDIR /app
 
 # Copy the application in.
 COPY . .
-CMD ["./main.py"]
+CMD ["python", "./main.py"]
